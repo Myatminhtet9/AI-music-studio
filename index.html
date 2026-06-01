@@ -2,8 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Music Production Studio - Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>AI Music Production Studio - Pro Mobile</title>
+    <link rel="manifest" href="/AI-music-studio/manifest.json">
+    <meta name="theme-color" content="#00e5ff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -17,9 +21,11 @@
 
         * {
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none; /* ဖုန်းတွင် ဖိနှိပ်ထားပါက pop-up မတက်စေရန် */
         }
 
         body {
@@ -28,12 +34,15 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
+            /* မိုဘိုင်းလ် Browser အချို့တွင် အတင်းဆွဲပါက လိပ်စာတန်း လိုက်လှုပ်ခါခြင်းကို တားဆီးရန် */
+            overscroll-behavior-y: none; 
         }
 
         header {
             background-color: var(--panel-bg);
-            padding: 15px 25px;
+            padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -41,7 +50,7 @@
         }
 
         header h1 {
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             color: var(--accent-blue);
             font-weight: 600;
             letter-spacing: 1px;
@@ -50,33 +59,28 @@
         .studio-status {
             background: rgba(0, 229, 255, 0.1);
             color: var(--accent-blue);
-            padding: 5px 12px;
+            padding: 4px 10px;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             border: 1px solid rgba(0, 229, 255, 0.3);
         }
 
         .workspace {
             display: flex;
+            flex-direction: column;
             flex: 1;
-            overflow: hidden;
         }
 
         .panel {
             background-color: var(--panel-bg);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
+            border-bottom: 1px solid var(--border-color);
             padding: 20px;
-            overflow-y: auto;
         }
-
-        .panel-left { flex: 1.2; min-width: 320px; }
-        .panel-center { flex: 2; min-width: 450px; background-color: #0e1420; }
-        .panel-right { flex: 1.2; min-width: 320px; border-right: none; }
+        
+        .panel-center { background-color: #0e1420; }
 
         h2 {
-            font-size: 1.05rem;
+            font-size: 1rem;
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 15px;
@@ -88,7 +92,7 @@
 
         textarea {
             width: 100%;
-            height: 140px;
+            height: 100px;
             background-color: var(--bg-color);
             border: 1px solid var(--border-color);
             border-radius: 8px;
@@ -99,13 +103,13 @@
             font-size: 0.95rem;
         }
 
-        .input-group { margin-bottom: 20px; }
+        .input-group { margin-bottom: 15px; }
 
         label {
             display: block;
             font-size: 0.85rem;
             color: var(--text-muted);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .custom-select {
@@ -118,22 +122,11 @@
             outline: none;
         }
 
-        .upload-box {
-            border: 2px dashed var(--border-color);
-            background-color: rgba(255,255,255,0.02);
-            border-radius: 10px;
-            padding: 20px 15px;
-            text-align: center;
-            cursor: pointer;
-        }
-
-        /* Duration Audio Timeline Track */
         .timeline-box {
             background: #111823;
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 15px;
-            margin-bottom: 20px;
         }
 
         .time-display {
@@ -145,140 +138,104 @@
             margin-bottom: 8px;
         }
 
-        /* Mixer Track Styles */
+        /* Mixer UI Optimization */
         .mixer-track {
             background-color: var(--panel-bg);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 15px;
+            padding: 18px 15px;
             margin-bottom: 12px;
             display: grid;
-            grid-template-columns: 100px 1fr 60px 80px;
+            grid-template-columns: 80px 1fr 55px 75px;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
+            touch-action: none; /* ဖုန်းပေါ်တွင် Touch လုပ်စဉ် စာမျက်နှာ ရွေ့မသွားစေရန် အဓိကထိန်းချုပ်မှု */
         }
 
         .track-info .track-name { font-weight: 600; font-size: 0.95rem; }
-        .track-info .track-key { font-size: 0.75rem; color: var(--accent-blue); margin-top: 2px; }
+        .track-info .track-key { font-size: 0.7rem; color: var(--accent-blue); margin-top: 2px; }
 
-        .fader-container { display: flex; align-items: center; }
-        
         .fader {
             -webkit-appearance: none;
-            width: 100%;
-            height: 6px;
+            width: 100%; height: 8px;
             background: var(--bg-color);
-            border-radius: 3px;
+            border-radius: 4px;
             outline: none;
         }
 
         .fader::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
+            width: 22px; height: 22px; /* လက်နဲ့ဆွဲရလွယ်အောင် ခလုတ်ကို ပိုကြီးပေးထားသည် */
             border-radius: 50%;
-            background: var(--text-color);
-            cursor: pointer;
+            background: #fff;
             border: 2px solid var(--accent-blue);
         }
 
-        /* Value Display Number */
         .value-display {
-            font-family: monospace;
-            font-size: 0.9rem;
-            color: var(--accent-gold);
-            text-align: right;
-            background: #0b0f19;
-            padding: 2px 6px;
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
+            font-family: monospace; font-size: 0.85rem;
+            color: var(--accent-gold); text-align: center;
+            background: #0b0f19; padding: 4px;
+            border-radius: 4px; border: 1px solid var(--border-color);
         }
 
-        .track-controls { display: flex; gap: 5px; }
-
+        .track-controls { display: flex; gap: 4px; }
         .btn-mute, .btn-solo {
-            background: var(--bg-color);
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            padding: 4px 8px;
-            font-size: 0.75rem;
-            border-radius: 4px;
-            cursor: pointer;
+            background: var(--bg-color); border: 1px solid var(--border-color);
+            color: var(--text-muted); padding: 8px 5px;
+            font-size: 0.8rem; border-radius: 4px; flex: 1;
         }
         .btn-mute.active { background: #ef4444; color: white; }
         .btn-solo.active { background: #eab308; color: black; }
 
-        /* Master Transpose */
         .master-box {
             background: linear-gradient(135deg, #1a2333 0%, #131a26 100%);
             border: 1px solid rgba(255, 170, 0, 0.3);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
+            border-radius: 10px; padding: 15px; margin-bottom: 15px;
         }
 
         .master-display {
-            font-size: 2rem;
-            font-weight: bold;
-            text-align: center;
-            color: var(--accent-gold);
-            margin: 5px 0;
-            font-family: monospace;
+            font-size: 1.8rem; font-weight: bold; text-align: center;
+            color: var(--accent-gold); margin: 5px 0; font-family: monospace;
         }
 
         .video-preview {
-            width: 100%;
-            aspect-ratio: 16/9;
-            background-color: #000;
-            border-radius: 8px;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border: 1px solid var(--border-color);
-            margin-bottom: 15px;
+            width: 100%; aspect-ratio: 16/9; background-color: #000;
+            border-radius: 8px; position: relative;
+            display: flex; justify-content: center; align-items: center;
+            border: 1px solid var(--border-color); margin-bottom: 15px;
         }
 
         .video-lyrics {
-            position: absolute;
-            bottom: 15px;
-            width: 90%;
-            text-align: center;
-            background: rgba(0,0,0,0.6);
-            padding: 6px 12px;
-            font-size: 0.9rem;
-            border-left: 3px solid var(--accent-blue);
+            position: absolute; bottom: 10px; width: 90%;
+            text-align: center; background: rgba(0,0,0,0.7);
+            padding: 6px; font-size: 0.85rem; border-left: 3px solid var(--accent-blue);
         }
 
         .btn-action {
-            width: 100%;
-            padding: 12px;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            margin-bottom: 10px;
+            width: 100%; padding: 14px; border-radius: 6px;
+            font-weight: 600; border: none; margin-bottom: 10px;
+            font-size: 1rem;
         }
         .btn-blue { background-color: var(--accent-blue); color: #000; }
         .btn-gold { background-color: var(--accent-gold); color: #000; }
+        .btn-red { background-color: #ef4444; color: #fff; }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>AI MUSIC PRODUCTION STUDIO</h1>
-        <div class="studio-status">● AI Engine Ready</div>
+        <h1>AI PRODUCTION STUDIO</h1>
+        <div class="studio-status" id="studioStatus">● Mobile Engine Ready</div>
     </header>
 
     <div class="workspace">
         
-        <div class="panel panel-left">
+        <div class="panel">
             <h2>📝 1. Lyrics & Key Input</h2>
             <div class="input-group">
                 <label>Song Lyrics (သီချင်းစာသား)</label>
-                <textarea placeholder="စာသားများကို ဤနေရာတွင် ရိုက်ထည့်ပါ..."></textarea>
+                <textarea id="lyricsInput" placeholder="စာသားများကို ရိုက်ထည့်ပါ..."></textarea>
             </div>
-
             <div class="input-group">
                 <label>Target Song Key</label>
                 <select class="custom-select" id="keySelect">
@@ -287,8 +244,7 @@
                     <option value="D">D Major</option>
                 </select>
             </div>
-
-            <h2>⏳ Song Duration (ကြာချိန်)</h2>
+            <h2>⏳ Song Duration</h2>
             <div class="timeline-box">
                 <div class="time-display">
                     <span id="currentTime">01:15</span>
@@ -296,150 +252,220 @@
                     <span id="totalTime">03:45</span>
                 </div>
                 <input type="range" class="fader" min="0" max="225" value="75" oninput="updateTimeline(this.value)">
-                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-top: 8px;">
-                    <span>Verse 1 (0:00)</span>
-                    <span>Chorus (1:02)</span>
-                    <span>Bridge (2:30)</span>
-                </div>
-            </div>
-
-            <h2>📁 3. AI Extraction</h2>
-            <div class="upload-box" onclick="alert('AI Processing Started...')">
-                <div style="font-size: 1.5rem; margin-bottom: 5px;">📥</div>
-                <div style="font-size: 0.85rem; font-weight: 600;">Import Audio / Video</div>
             </div>
         </div>
 
         <div class="panel panel-center">
-            <h2>🎛️ 2 & 6. Arrangements & Mixer Control</h2>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px;">ဘားတံများနှင့် ဂဏန်းများဖြင့် အသေးစိတ် ညှိနှိုင်းမှုအပိုင်း</p>
+            <h2>🎛️ 2 & 6. Arrangements & Mixer (High-Speed Touch)</h2>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 15px;">လိုင်းများပေါ်တွင် လက်ဖြင့်ပွတ်ဆွဲပါက ချက်ချင်းတီးခတ်နိုင်ပါသည်</p>
 
-            <div class="mixer-track">
+            <div class="mixer-track" id="track-vocal">
                 <div class="track-info">
                     <div class="track-name">🎤 Vocal</div>
-                    <div class="track-key" id="vocalKeyStatus">Key: G Maj</div>
+                    <div class="track-key">Key: G Maj</div>
                 </div>
-                <div class="fader-container">
-                    <input type="range" class="fader" min="0" max="100" value="85" oninput="updateVolDisplay('vocalVol', this.value)">
-                </div>
+                <div class="fader-container"><input type="range" class="fader" id="vocalSlider" min="0" max="100" value="85"></div>
                 <div class="value-display" id="vocalVol">85%</div>
                 <div class="track-controls">
-                    <button class="btn-mute" onclick="this.classList.toggle('active')">M</button>
-                    <button class="btn-solo" onclick="this.classList.toggle('active')">S</button>
+                    <button class="btn-mute" id="mute-vocal">M</button>
+                    <button class="btn-solo">S</button>
                 </div>
             </div>
 
-            <div class="mixer-track">
+            <div class="mixer-track" id="track-piano">
                 <div class="track-info">
                     <div class="track-name">🎹 Piano</div>
-                    <div class="track-key" id="pianoKeyStatus">Key: G (Con)</div>
+                    <div class="track-key">Key: G (Con)</div>
                 </div>
-                <div class="fader-container">
-                    <input type="range" class="fader" min="0" max="100" value="70" oninput="updateVolDisplay('pianoVol', this.value)">
-                </div>
+                <div class="fader-container"><input type="range" class="fader" id="pianoSlider" min="0" max="100" value="70"></div>
                 <div class="value-display" id="pianoVol">70%</div>
                 <div class="track-controls">
-                    <button class="btn-mute" onclick="this.classList.toggle('active')">M</button>
-                    <button class="btn-solo" onclick="this.classList.toggle('active')">S</button>
+                    <button class="btn-mute" id="mute-piano">M</button>
+                    <button class="btn-solo">S</button>
                 </div>
             </div>
 
-            <div class="mixer-track">
+            <div class="mixer-track" id="track-guitar">
                 <div class="track-info">
                     <div class="track-name">🎸 Guitar</div>
-                    <div class="track-key" id="guitarKeyStatus">Capo 2 (F)</div>
+                    <div class="track-key">Capo 2 (F)</div>
                 </div>
-                <div class="fader-container">
-                    <input type="range" class="fader" min="0" max="100" value="75" oninput="updateVolDisplay('guitarVol', this.value)">
-                </div>
+                <div class="fader-container"><input type="range" class="fader" id="guitarSlider" min="0" max="100" value="75"></div>
                 <div class="value-display" id="guitarVol">75%</div>
                 <div class="track-controls">
-                    <button class="btn-mute" onclick="this.classList.toggle('active')">M</button>
-                    <button class="btn-solo" onclick="this.classList.toggle('active')">S</button>
+                    <button class="btn-mute" id="mute-guitar">M</button>
+                    <button class="btn-solo">S</button>
                 </div>
             </div>
 
-            <div class="mixer-track">
+            <div class="mixer-track" id="track-brass">
                 <div class="track-info">
                     <div class="track-name">🎷 Brass</div>
-                    <div class="track-key" id="brassKeyStatus">Key: A</div>
+                    <div class="track-key">Key: A</div>
                 </div>
-                <div class="fader-container">
-                    <input type="range" class="fader" min="0" max="100" value="60" oninput="updateVolDisplay('brassVol', this.value)">
-                </div>
+                <div class="fader-container"><input type="range" class="fader" id="brassSlider" min="0" max="100" value="60"></div>
                 <div class="value-display" id="brassVol">60%</div>
                 <div class="track-controls">
-                    <button class="btn-mute" onclick="this.classList.toggle('active')">M</button>
-                    <button class="btn-solo" onclick="this.classList.toggle('active')">S</button>
+                    <button class="btn-mute" id="mute-brass">M</button>
+                    <button class="btn-solo">S</button>
                 </div>
             </div>
         </div>
 
-        <div class="panel panel-right">
+        <div class="panel">
             <h2>🎚️ Master Transpose</h2>
             <div class="master-box">
-                <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:10px;">
-                    <span>🔗 Link Instruments</span>
-                    <input type="checkbox" id="linkToggle" checked>
-                </div>
                 <div class="master-display" id="pitchValue">0 semitones</div>
                 <input type="range" class="fader" id="pitchSlider" min="-6" max="6" value="0" step="1" oninput="updatePitch(this.value)">
             </div>
 
             <h2>🎬 5. Video Preview</h2>
             <div class="video-preview">
-                <div style="color: #1e293b; font-size: 2rem;">🎬</div>
                 <div class="video-lyrics" id="previewLyrics">စာတန်းထိုး Preview</div>
             </div>
 
-            <div style="margin-top: auto;">
-                <button class="btn-action btn-blue" onclick="alert('Merging Video & Audio...')">🎬 Generate Video</button>
-                <button class="btn-action btn-gold" onclick="alert('Link Copied!')">📤 Share Studio Link</button>
-            </div>
+            <button id="recordBtn" class="btn-action btn-blue">🔴 Start Recording</button>
+            <button id="installBtn" class="btn-action btn-gold" style="display:none;">📲 Install App to Screen</button>
         </div>
 
     </div>
 
-    <script>
-        // အသံပမာဏ ဂဏန်းများကို Live ပြောင်းလဲပေးမည့် စနစ်
-        function updateVolDisplay(elementId, value) {
-            document.getElementById(elementId).innerText = value + "%";
-        }
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // သီချင်းကြာချိန် ဘားတံ ဆွဲသည့်အခါ ဂဏန်းပြောင်းလဲပေးမည့် စနစ်
-        function updateTimeline(seconds) {
-            let min = Math.floor(seconds / 60);
-            let sec = seconds % 60;
-            let formattedTime = (min < 10 ? "0" : "") + min + ":" + (sec < 10 ? "0" : "") + sec;
-            document.getElementById('currentTime').innerText = formattedTime;
-        }
+        const firebaseConfig = {
+            authDomain: "ai-music-studio-37c90.firebaseapp.com",
+            databaseURL: "https://ai-music-studio-37c90-default-rtdb.firebaseio.com",
+            projectId: "ai-music-studio-37c90",
+            storageBucket: "ai-music-studio-37c90.appspot.com"
+        };
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
 
-        // Pitch Master Slider အတွက် ဂဏန်းစနစ်
-        function updatePitch(val) {
-            let sign = val > 0 ? "+" : "";
-            document.getElementById('pitchValue').innerText = sign + val + " semitones";
+        let audioCtx = null, dest = null, mediaRecorder = null, chunks = [], isRecording = false, activePitch = 0;
+        const mutes = { vocal: false, piano: false, guitar: false, brass: false };
 
-            let isLinked = document.getElementById('linkToggle').checked;
-            if(isLinked) {
-                if(val == 0) {
-                    document.getElementById('vocalKeyStatus').innerText = "Key: G Maj";
-                    document.getElementById('pianoKeyStatus').innerText = "Key: G (Con)";
-                    document.getElementById('guitarKeyStatus').innerText = "Capo 2 (F)";
-                    document.getElementById('brassKeyStatus').innerText = "Key: A";
-                } else {
-                    document.getElementById('vocalKeyStatus').innerText = "Shift: " + sign + val;
-                    document.getElementById('pianoKeyStatus').innerText = "Aligned " + sign + val;
-                    document.getElementById('guitarKeyStatus').innerText = "Capo Adapt";
-                    document.getElementById('brassKeyStatus').innerText = "Transposed";
-                }
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                dest = audioCtx.createMediaStreamDestination();
             }
         }
 
-        // စာရိုက်လျှင် ကာရာအိုကေစာတန်းထိုး လိုက်ပြောင်းခြင်း
-        const textarea = document.querySelector('textarea');
-        textarea.addEventListener('input', function() {
+        window.playTone = function(track) {
+            initAudio();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            if (mutes[track]) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            let freq = 261.63;
+            if (track === 'vocal') { osc.type = 'sine'; freq = 329.63; }
+            else if (track === 'piano') { osc.type = 'triangle'; freq = 261.63; }
+            else if (track === 'guitar') { osc.type = 'sawtooth'; freq = 196.00; }
+            else if (track === 'brass') { osc.type = 'square'; freq = 440.00; }
+
+            osc.frequency.setValueAtTime(freq * Math.pow(2, activePitch / 12), audioCtx.currentTime);
+            gain.gain.setValueAtTime((document.getElementById(track + 'Slider').value / 100) * 0.25, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3); // တုံ့ပြန်မှု ပိုမြန်အောင် တီးလုံးသံတိုပေးထားသည်
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            if (isRecording && dest) gain.connect(dest);
+
+            osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+
+            push(ref(database, 'live_taps'), { track: track, timestamp: Date.now() });
+        };
+
+        // 📱 မိုဘိုင်းလ်ဖုန်းများအတွက် အထူးပြုပြင်ထားသော High-Speed Touch စနစ်
+        ['vocal', 'piano', 'guitar', 'brass'].forEach(tr => {
+            const row = document.getElementById('track-' + tr);
+            let isTouching = false;
+
+            // 1. Touch Start (ထိလိုက်သည်နှင့် ချက်ချင်း နှောင့်နှေးမှုမရှိ အသံထွက်ရန်)
+            row.addEventListener('touchstart', (e) => {
+                // slider သို့မဟုတ် ခလုတ်တွေကို နှိပ်တာမဟုတ်ရင် စာမျက်နှာ မရွေ့အောင်ပိတ်ပြီး အသံထွက်စေသည်
+                if (e.target.className !== 'fader' && e.target.tagName !== 'BUTTON') {
+                    e.preventDefault(); 
+                    isTouching = true;
+                    playTone(tr);
+                }
+            }, { passive: false });
+
+            // 2. Touch Move (ပွတ်ဆွဲနေစဉ် စဉ်ဆက်မပြတ် မြန်ဆန်စွာ အသံထွက်ရန်)
+            row.addEventListener('touchmove', (e) => {
+                if (isTouching && e.target.className !== 'fader' && e.target.tagName !== 'BUTTON') {
+                    e.preventDefault();
+                    // ပွတ်ဆွဲနှုန်းအလိုက် ထပ်ခါတလဲလဲ အသံမြည်စေရန်
+                    if (Math.random() < 0.15) { 
+                        playTone(tr); 
+                    }
+                }
+            }, { passive: false });
+
+            row.addEventListener('touchend', () => { isTouching = false; });
+            row.addEventListener('touchcancel', () => { isTouching = false; });
+
+            // Sliders Update
+            const slider = document.getElementById(tr + 'Slider');
+            slider.addEventListener('input', (e) => {
+                document.getElementById(tr + 'Vol').innerText = e.target.value + "%";
+            });
+            // Volume ဆွဲနေစဉ် တစ်ခါတည်း အသံကြားရစေရန်
+            slider.addEventListener('touchend', () => { playTone(tr); });
+
+            // Mute Button (Touch Optimized)
+            document.getElementById('mute-' + tr).addEventListener('touchstart', (e) => {
+                e.stopPropagation();
+                document.getElementById('mute-' + tr).classList.toggle('active');
+                mutes[tr] = document.getElementById('mute-' + tr).classList.contains('active');
+            });
+        });
+
+        // Recording Logic
+        const recordBtn = document.getElementById('recordBtn');
+        recordBtn.addEventListener('click', () => {
+            initAudio();
+            if (!isRecording) {
+                isRecording = true; chunks = [];
+                mediaRecorder = new MediaRecorder(dest.stream);
+                mediaRecorder.ondataavailable = e => chunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(chunks, { type: 'audio/wav' });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `Track_${Date.now()}.wav`; link.click();
+                    document.getElementById('studioStatus').innerText = "● WAV Track Exported!";
+                };
+                mediaRecorder.start();
+                recordBtn.innerText = "⏹️ Stop & Export WAV"; recordBtn.className = "btn-action btn-red";
+                document.getElementById('studioStatus').innerText = "● Studio Recording...";
+            } else {
+                isRecording = false; mediaRecorder.stop();
+                recordBtn.innerText = "🔴 Start Recording"; recordBtn.className = "btn-action btn-blue";
+            }
+        });
+
+        window.updateTimeline = function(s) {
+            let m = Math.floor(s / 60); let sec = s % 60;
+            document.getElementById('currentTime').innerText = (m < 10 ? "0" : "") + m + ":" + (sec < 10 ? "0" : "") + sec;
+        };
+
+        window.updatePitch = function(v) {
+            activePitch = parseInt(v);
+            document.getElementById('pitchValue').innerText = (v > 0 ? "+" : "") + v + " semitones";
+        };
+
+        document.getElementById('lyricsInput').addEventListener('input', function() {
             document.getElementById('previewLyrics').innerText = this.value ? this.value.split('\n')[0] : "စာတန်းထိုး Preview";
         });
+
+        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/AI-music-studio/sw.js'); }); }
+        let defPrompt; window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); defPrompt = e; document.getElementById('installBtn').style.display = 'block'; });
+        document.getElementById('installBtn').addEventListener('click', () => { if(defPrompt) { defPrompt.prompt(); defPrompt = null; } });
     </script>
 </body>
 </html>
